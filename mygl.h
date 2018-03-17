@@ -6,24 +6,24 @@
 #include "definitions.h"
 
 //******************************************************************************
-//estruturas para facilitar as chamadas nas funções
+    //estrutura das coordenadas do pixel
     typedef struct{
         unsigned int X;
         unsigned int Y;
     }tCoordenadas;
-
+    //estrutura do pixel e suas respectivas caracterÃ­sticas
     typedef struct{
         tCoordenadas coordenadas;
-        unsigned int valorR;
-        unsigned int valorG;
-        unsigned int valorB;
-        unsigned int valorA;
+        unsigned int R;
+        unsigned int G;
+        unsigned int B;
+        unsigned int A;
     }tPixel;
 
 //******************************************************************************
 
 //*****************************************************************************
-// Defina aqui as suas funções gráficas
+// Defina aqui as suas funÃ§Ãµes grÃ¡ficas
 
 
     void pintaTela (){
@@ -40,62 +40,67 @@
         if (pixel.coordenadas.X >= 0 && pixel.coordenadas.X <=IMAGE_WIDTH
             &&pixel.coordenadas.Y >=0 && pixel.coordenadas.Y <= IMAGE_HEIGHT){
 
-            offset = 4*(IMAGE_WIDTH*pixel.coordenadas.Y + pixel.coordenadas.X);
+            offset = (IMAGE_WIDTH*pixel.coordenadas.Y + pixel.coordenadas.X)*4;
 
-            FBptr[offset]   = pixel.valorR;
-            FBptr[offset+1] = pixel.valorB;
-            FBptr[offset+2] = pixel.valorG;
-            FBptr[offset+3] = pixel.valorA;
+            FBptr[offset]   = pixel.R;
+            FBptr[offset+1] = pixel.B;
+            FBptr[offset+2] = pixel.G;
+            FBptr[offset+3] = pixel.A;
 
             }
         else{
-            printf("pixel fora do intervalo\n");
+            printf("Tente um valor entre %d e %d", IMAGE_WIDTH, IMAGE_HEIGHT);
         }
     }
 
     void drawLine(tPixel primeiro, tPixel ultimo){
-        int deltaX = ultimo.coordenadas.X - primeiro.coordenadas.X;
-        int deltaY = ultimo.coordenadas.Y - primeiro.coordenadas.Y;
         int d;
         int incrementaLeste;
         int incrementaNordeste;
         int incrementaX=0;
         int incrementaY=0;
+        int deltaX = ultimo.coordenadas.X - primeiro.coordenadas.X;
+        int deltaY = ultimo.coordenadas.Y - primeiro.coordenadas.Y;
 
-        //se o delta for negativo decrementa, se for positivo, incrementa
+        //se o delta for negativo decrementa
+        // o valor de incrementaX Ã© 1, caso contrÃ¡rio Ã© -1
         if (deltaX>0){
             incrementaX=1;
         }else{
             incrementaX=-1;
-            deltaX=abs(deltaX); //trabalhar com módulo (valor positivo)
+            //mÃ³dulo de deltaX
+            deltaX=abs(deltaX); 
         }
         if(deltaY>0){
             incrementaY=1;
         }else{
             incrementaY=-1;
-            deltaY=abs(deltaY); //trabalhar com módulo (valor positivo)
+            //mÃ³dulo de deltaY
+            deltaY=abs(deltaY); 
         }
 
+        //coordenadas e caracterÃ­sticas do pixel 
         tPixel atual;
-        //ter as coordenadas inciais do primeiro pixel
         atual.coordenadas.X = primeiro.coordenadas.X;
         atual.coordenadas.Y = primeiro.coordenadas.Y;
-        //ter as cores do ultimo pixel
-        atual.valorR = ultimo.valorR;
-        atual.valorG = ultimo.valorG;
-        atual.valorB = ultimo.valorB;
-        atual.valorA = ultimo.valorA;
+        atual.R = ultimo.R;
+        atual.G = ultimo.G;
+        atual.B = ultimo.B;
+        atual.A = ultimo.A;
 
-        if (deltaX == 0){ //é uma coluna
+        //se delta X for igual a zero, temos uma coluna
+        //se delta X for diferente de zero e 
+        //delta Y for igual a zero temos uma linha
+        if (deltaX == 0){
             for (atual.coordenadas.Y ; atual.coordenadas.Y != ultimo.coordenadas.Y; atual.coordenadas.Y+=incrementaY){
                 putPixel(atual);
             }
-        }else{ //deltaX !=0
+        }else{
             if (deltaY == 0){ //linha horizontal
                 for (atual.coordenadas.X; atual.coordenadas.X!=ultimo.coordenadas.X; atual.coordenadas.X+=incrementaX){
                     putPixel(atual);
                 }
-            }else{ //nem é uma linha nem uma coluna
+            }else{ //nem ï¿½ uma linha nem uma coluna
                 if (abs(deltaX)>=abs(deltaY)){
                     d=2*deltaY-deltaX;
                     incrementaLeste=2*deltaY;
@@ -141,30 +146,22 @@
         int incA, incB, incR, incG;
 
         if (abs(deltaX) >= abs(deltaY) ){
-            incR = (ultimo.valorR - primeiro.valorR)/deltaX;
-            incG = (ultimo.valorG - primeiro.valorG)/deltaX;
-            incB = (ultimo.valorB - primeiro.valorB)/deltaX;
-            incA = (ultimo.valorA - primeiro.valorA)/deltaX;
+            incR = (ultimo.R - primeiro.R)/deltaX;
+            incG = (ultimo.G - primeiro.G)/deltaX;
+            incB = (ultimo.B - primeiro.B)/deltaX;
+            incA = (ultimo.A - primeiro.A)/deltaX;
         }
         else{
-            incR = (ultimo.valorR - primeiro.valorR)/deltaY;
-            incG = (ultimo.valorG - primeiro.valorG)/deltaY;
-            incB = (ultimo.valorB - primeiro.valorB)/deltaY;
-            incA = (ultimo.valorA - primeiro.valorA)/deltaY;
+            incR = (ultimo.R - primeiro.R)/deltaY;
+            incG = (ultimo.G - primeiro.G)/deltaY;
+            incB = (ultimo.B - primeiro.B)/deltaY;
+            incA = (ultimo.A - primeiro.A)/deltaY;
         }
 
-        /*
-            float comprimento = sqrt(deltaX*deltaX+deltaY*deltaY);
-            float incR = (float)(ultimo.valorR - primeiro.valorR)/comprimento;
-            float incG = (float)(ultimo.valorG - primeiro.valorG)/comprimento;
-            float incB = (float)(ultimo.valorB - primeiro.valorB)/comprimento;
-            //static int incA = (ultimo.valorA - primeiro.valorA)/comprimento;
-        */
-
-        atual->valorA+=incA;
-        atual->valorR+=incR;
-        atual->valorG+=incG;
-        atual->valorB+=incB;
+        atual->A+=incA;
+        atual->R+=incR;
+        atual->G+=incG;
+        atual->B+=incB;
 
         putPixel(*atual);
     }
@@ -185,13 +182,13 @@
             incrementaX=1;
         }else if (deltaX < 0){
             incrementaX=-1;
-            deltaX=abs(deltaX); //trabalhar com módulo (valor positivo)
+            deltaX=abs(deltaX); //trabalhar com mï¿½dulo (valor positivo)
         }
         if(deltaY>0){
             incrementaY=1;
         }else if (deltaY<0){
             incrementaY=-1;
-            deltaY=abs(deltaY); //trabalhar com módulo (valor positivo)
+            deltaY=abs(deltaY); //trabalhar com mï¿½dulo (valor positivo)
         }
 
         tPixel atual;
@@ -199,12 +196,12 @@
         atual.coordenadas.X = primeiro.coordenadas.X;
         atual.coordenadas.Y = primeiro.coordenadas.Y;
         //ter as cores do primeiro pixel
-        atual.valorR = primeiro.valorR;
-        atual.valorG = primeiro.valorG;
-        atual.valorB = primeiro.valorB;
-        atual.valorA = primeiro.valorA;
+        atual.R = primeiro.R;
+        atual.G = primeiro.G;
+        atual.B = primeiro.B;
+        atual.A = primeiro.A;
 
-        if (deltaX == 0){ //é uma coluna
+        if (deltaX == 0){ //ï¿½ uma coluna
             for (atual.coordenadas.Y ; atual.coordenadas.Y != ultimo.coordenadas.Y; atual.coordenadas.Y+=incrementaY){
                 interpolar(primeiro, ultimo, &atual);
 
@@ -215,7 +212,7 @@
                     interpolar(primeiro, ultimo, &atual);
 
                 }
-            }else{ //nem é uma linha nem uma coluna
+            }else{ //nem ï¿½ uma linha nem uma coluna
                 if (abs(deltaX)>=abs(deltaY)){
                     d=2*deltaY-deltaX;
                     incrementaLeste=2*deltaY;
@@ -281,13 +278,13 @@
             incrementaX=1;
         }else{
             incrementaX=-1;
-            deltaX=abs(deltaX); //trabalhar com módulo (valor positivo)
+            deltaX=abs(deltaX); //trabalhar com mï¿½dulo (valor positivo)
         }
         if(deltaY>0){
             incrementaY=1;
         }else{
             incrementaY=-1;
-            deltaY=abs(deltaY); //trabalhar com módulo (valor positivo)
+            deltaY=abs(deltaY); //trabalhar com mï¿½dulo (valor positivo)
         }
 
         tPixel atual;
@@ -295,19 +292,19 @@
         atual.coordenadas.X = primeiro.coordenadas.X;
         atual.coordenadas.Y = primeiro.coordenadas.Y;
         //ter as cores do primeiro pixel
-        atual.valorR = primeiro.valorR;
-        atual.valorG = primeiro.valorG;
-        atual.valorB = primeiro.valorB;
-        atual.valorA = primeiro.valorA;
+        atual.R = primeiro.R;
+        atual.G = primeiro.G;
+        atual.B = primeiro.B;
+        atual.A = primeiro.A;
 
         //incrementar cores aos poucos
         int comprimento = sqrt(deltaX*deltaX+deltaY*deltaY);
-        int incR = (ultimo.valorR - primeiro.valorR)/comprimento;
-        int incG = (ultimo.valorG - primeiro.valorG)/comprimento;
-        int incB = (ultimo.valorB - primeiro.valorB)/comprimento;
-        int incA = (ultimo.valorA - primeiro.valorA)/comprimento;
+        int incR = (ultimo.R - primeiro.R)/comprimento;
+        int incG = (ultimo.G - primeiro.G)/comprimento;
+        int incB = (ultimo.B - primeiro.B)/comprimento;
+        int incA = (ultimo.A - primeiro.A)/comprimento;
 
-        if (deltaX == 0){ //é uma coluna
+        if (deltaX == 0){ //ï¿½ uma coluna
             for (atual.coordenadas.Y ; atual.coordenadas.Y != ultimo.coordenadas.Y; atual.coordenadas.Y+=incrementaY){
 
                 drawLine(atual,p3);
@@ -317,7 +314,7 @@
                 for (atual.coordenadas.X; atual.coordenadas.X!=ultimo.coordenadas.X; atual.coordenadas.X+=incrementaX){
                     drawLine(atual,p3);
                 }
-            }else{ //nem é uma linha nem uma coluna
+            }else{ //nem ï¿½ uma linha nem uma coluna
                 if (abs(deltaX)>=abs(deltaY)){
                     d=2*deltaY-deltaX;
                     incrementaLeste=2*deltaY;
@@ -370,13 +367,13 @@
             incrementaX=1;
         }else{
             incrementaX=-1;
-            deltaX=abs(deltaX); //trabalhar com módulo (valor positivo)
+            deltaX=abs(deltaX); //trabalhar com mï¿½dulo (valor positivo)
         }
         if(deltaY>0){
             incrementaY=1;
         }else{
             incrementaY=-1;
-            deltaY=abs(deltaY); //trabalhar com módulo (valor positivo)
+            deltaY=abs(deltaY); //trabalhar com mï¿½dulo (valor positivo)
         }
 
         tPixel atual;
@@ -384,19 +381,19 @@
         atual.coordenadas.X = primeiro.coordenadas.X;
         atual.coordenadas.Y = primeiro.coordenadas.Y;
         //ter as cores do primeiro pixel
-        atual.valorR = primeiro.valorR;
-        atual.valorG = primeiro.valorG;
-        atual.valorB = primeiro.valorB;
-        atual.valorA = primeiro.valorA;
+        atual.R = primeiro.R;
+        atual.G = primeiro.G;
+        atual.B = primeiro.B;
+        atual.A = primeiro.A;
 
         //incrementar cores aos poucos
         int comprimento = sqrt(deltaX*deltaX+deltaY*deltaY);
-        int incR = (ultimo.valorR - primeiro.valorR)/comprimento;
-        int incG = (ultimo.valorG - primeiro.valorG)/comprimento;
-        int incB = (ultimo.valorB - primeiro.valorB)/comprimento;
-        int incA = (ultimo.valorA - primeiro.valorA)/comprimento;
+        int incR = (ultimo.R - primeiro.R)/comprimento;
+        int incG = (ultimo.G - primeiro.G)/comprimento;
+        int incB = (ultimo.B - primeiro.B)/comprimento;
+        int incA = (ultimo.A - primeiro.A)/comprimento;
 
-        if (deltaX == 0){ //é uma coluna
+        if (deltaX == 0){ //ï¿½ uma coluna
             for (atual.coordenadas.Y ; atual.coordenadas.Y != ultimo.coordenadas.Y; atual.coordenadas.Y+=incrementaY){
 
                 interpolar(primeiro, ultimo, &atual);
@@ -409,7 +406,7 @@
                     interpolar(primeiro, ultimo, &atual);
                     drawLineInterpolado(atual,p3);
                 }
-            }else{ //nem é uma linha nem uma coluna
+            }else{ //nem ï¿½ uma linha nem uma coluna
                 if (abs(deltaX)>=abs(deltaY)){
                     d=2*deltaY-deltaX;
                     incrementaLeste=2*deltaY;
